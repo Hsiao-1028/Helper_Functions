@@ -16,7 +16,7 @@ rm(list=ls());gc()
 # @param var A character string specifying the variable to analyze.
 # @param prop Logical indicating if counts should be converted to proportions (default is FALSE).
 # @param prop.digit Integer specifying the number of decimal places for proportions (default is 3).
-row_table <- function(dt, var, prop = FALSE, prop.digit = 3) {
+row_table <- function(dt, var, prop = FALSE, prop.digit = 3, out_from_nhi = FALSE) {
 
   temp_dt <- setDT(dt)
   temp_dt <- temp_dt[, .N, by = get(var)] %>% dcast(formula = ... ~ get, value.var = "N")
@@ -26,6 +26,11 @@ row_table <- function(dt, var, prop = FALSE, prop.digit = 3) {
   
   if (prop) {
     temp_dt[1] <- round(temp_dt[1] / nrow(dt), prop.digit)
+  }
+  
+  if (out_from_nhi){
+    temp_dt[temp_dt <=3] <- "<3"
+    
   }
   
   return(temp_dt)
@@ -51,7 +56,7 @@ row_table_order <- function(dt, NA.to.zero = FALSE) {
 # Example Usage
 
 # Create example data
-group <- sample(c("A", "B", "C", "E", "Z"), 159, replace = TRUE)
+group <- sample(c("A", "B", "C", "E", "Z"), 5, replace = TRUE)
 group2 <- sample(c("A", "B", "C", "D", NA, "Y"), 323, replace = TRUE)
 
 # Create a data.table
@@ -64,7 +69,7 @@ results<- data.table()
 
 for( i in c(1,2) ){
  temp <- dt_main[ dt == i]
- temp <- row_table(temp, "group", prop = TRUE)
+ temp <- row_table(temp, "group", prop = FALSE, out_from_nhi = FALSE)
  results <- rbind(results, temp, fill = TRUE) %>% row_table_order( NA.to.zero = F)
 }
 
